@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- SMS parsing (no internet! as mandated) -->
-    <uses-permission android:name="android.permission.READ_SMS" />
-
     <application
         android:name=".FinanceApp"
         android:allowBackup="false"

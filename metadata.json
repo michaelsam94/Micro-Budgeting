@@ -1,6 +1,6 @@
 {
   "name": "Micro Budgeting",
-  "description": "100% offline, privacy-first personal finance and micro-budgeting app with automatic SMS expense parsing.",
+  "description": "100% offline, privacy-first personal finance and micro-budgeting app for manual expense tracking.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

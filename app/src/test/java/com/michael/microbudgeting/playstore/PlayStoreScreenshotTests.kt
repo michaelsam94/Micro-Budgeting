@@ -1,0 +1,3 @@
+package com.michael.microbudgeting.playstore
+
+interface PlayStoreScreenshotTests
