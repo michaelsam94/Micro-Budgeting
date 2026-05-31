@@ -1,9 +1,19 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
+}
+
+val signingProperties = Properties().apply {
+  val propertiesFile = rootProject.file("key.properties")
+  if (propertiesFile.exists()) {
+    propertiesFile.inputStream().use { load(it) }
+  }
 }
 
 if (gradle.startParameter.taskNames.any {
@@ -21,19 +31,21 @@ android {
     applicationId = "com.michael.microbudgeting"
     minSdk = 24
     targetSdk = 36
-    versionCode = 3
-    versionName = "1.0.1"
+    versionCode = 4
+    versionName = "1.0.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      val keystorePath = System.getenv("KEYSTORE_PATH")
+        ?: signingProperties.getProperty("storeFile")
+        ?: "${rootDir}/my-upload-key.jks"
+      storeFile = File(keystorePath).let { if (it.isAbsolute) it else rootProject.file(keystorePath) }
+      storePassword = System.getenv("STORE_PASSWORD") ?: signingProperties.getProperty("storePassword")
+      keyAlias = System.getenv("KEY_ALIAS") ?: signingProperties.getProperty("keyAlias") ?: "upload"
+      keyPassword = System.getenv("KEY_PASSWORD") ?: signingProperties.getProperty("keyPassword")
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
