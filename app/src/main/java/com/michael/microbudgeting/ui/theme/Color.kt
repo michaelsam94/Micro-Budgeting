@@ -2,10 +2,11 @@ package com.michael.microbudgeting.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val BrandTeal = Color(0xFF0F766E)
+val BrandTealDark = Color(0xFF0F3D3E)
+val BrandTealLight = Color(0xFF2DD4BF)
+val BrandGold = Color(0xFFF2B84B)
+val BrandGoldDark = Color(0xFFB7791F)
+val BrandInk = Color(0xFF12363A)
+val BrandMist = Color(0xFFEFFAF8)
+val BrandSlate = Color(0xFF64748B)

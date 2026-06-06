@@ -2,6 +2,7 @@ package com.michael.microbudgeting.presentation
 
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +41,13 @@ import com.michael.microbudgeting.domain.model.TransactionSource
 import com.michael.microbudgeting.presentation.components.BudgetProgressBar
 import com.michael.microbudgeting.presentation.components.CategoryBadge
 import com.michael.microbudgeting.presentation.components.SpendingPieChart
+import com.michael.microbudgeting.ui.theme.BrandGold
+import com.michael.microbudgeting.ui.theme.BrandGoldDark
+import com.michael.microbudgeting.ui.theme.BrandInk
+import com.michael.microbudgeting.ui.theme.BrandSlate
+import com.michael.microbudgeting.ui.theme.BrandTeal
+import com.michael.microbudgeting.ui.theme.BrandTealDark
+import com.michael.microbudgeting.ui.theme.BrandTealLight
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -67,27 +77,7 @@ fun MainScreen(viewModel: FinanceViewModel) {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.tertiary
-                                        )
-                                    ),
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        MicroBudgetingToolbarIcon(modifier = Modifier.size(36.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Micro Budgeting",
@@ -392,6 +382,82 @@ fun MainScreen(viewModel: FinanceViewModel) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MicroBudgetingToolbarIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val radius = w * 0.22f
+        drawRoundRect(
+            brush = Brush.linearGradient(
+                colors = listOf(BrandTealLight, BrandTealDark),
+                start = androidx.compose.ui.geometry.Offset.Zero,
+                end = androidx.compose.ui.geometry.Offset(w, h)
+            ),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius, radius)
+        )
+        val diagonal = Path().apply {
+            moveTo(0f, h * 0.12f)
+            lineTo(w, h * 0.55f)
+            lineTo(w, h)
+            lineTo(0f, h)
+            close()
+        }
+        drawPath(diagonal, color = BrandTealDark.copy(alpha = 0.82f))
+
+        drawRoundRect(
+            color = Color.White,
+            topLeft = androidx.compose.ui.geometry.Offset(w * 0.24f, h * 0.18f),
+            size = androidx.compose.ui.geometry.Size(w * 0.42f, h * 0.58f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.08f, w * 0.08f)
+        )
+        drawRoundRect(
+            color = BrandTealLight,
+            topLeft = androidx.compose.ui.geometry.Offset(w * 0.32f, h * 0.28f),
+            size = androidx.compose.ui.geometry.Size(w * 0.23f, h * 0.08f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.03f, w * 0.03f)
+        )
+        listOf(0.46f, 0.57f, 0.68f).forEachIndexed { index, rowY ->
+            val rowColor = if (index == 0) BrandTeal else BrandSlate
+            drawCircle(
+                color = rowColor,
+                radius = w * 0.028f,
+                center = androidx.compose.ui.geometry.Offset(w * 0.31f, h * rowY)
+            )
+            drawRoundRect(
+                color = rowColor,
+                topLeft = androidx.compose.ui.geometry.Offset(w * 0.37f, h * rowY - h * 0.018f),
+                size = androidx.compose.ui.geometry.Size(w * if (index == 1) 0.21f else 0.25f, h * 0.036f),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.02f, w * 0.02f)
+            )
+        }
+        drawCircle(
+            color = BrandGoldDark,
+            radius = w * 0.15f,
+            center = androidx.compose.ui.geometry.Offset(w * 0.66f, h * 0.72f)
+        )
+        drawCircle(
+            color = BrandGold,
+            radius = w * 0.15f,
+            center = androidx.compose.ui.geometry.Offset(w * 0.61f, h * 0.67f)
+        )
+        drawLine(
+            color = BrandInk,
+            start = androidx.compose.ui.geometry.Offset(w * 0.54f, h * 0.67f),
+            end = androidx.compose.ui.geometry.Offset(w * 0.60f, h * 0.75f),
+            strokeWidth = w * 0.05f,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = BrandInk,
+            start = androidx.compose.ui.geometry.Offset(w * 0.60f, h * 0.75f),
+            end = androidx.compose.ui.geometry.Offset(w * 0.72f, h * 0.58f),
+            strokeWidth = w * 0.05f,
+            cap = StrokeCap.Round
+        )
     }
 }
 

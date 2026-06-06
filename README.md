@@ -1,72 +1,93 @@
 # Micro Budgeting
 
+![Micro Budgeting feature graphic](play-store/feature-graphic.png)
+
 [![Android](https://img.shields.io/badge/platform-Android-3DDC84)](https://developer.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF)](https://kotlinlang.org/)
-[![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4)](https://developer.android.com/compose)
-[![Version](https://img.shields.io/badge/version-1.0.1-blue)](app/build.gradle.kts)
+[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4)](https://developer.android.com/compose)
+[![Version](https://img.shields.io/badge/version-1.0.3-blue)](app/build.gradle.kts)
 [![License](https://img.shields.io/badge/license-Not%20configured-lightgrey)](#license)
+[![Last commit](https://img.shields.io/github/last-commit/michaelsam94/Micro-Budgeting)](https://github.com/michaelsam94/Micro-Budgeting/commits)
+[![Open issues](https://img.shields.io/github/issues/michaelsam94/Micro-Budgeting)](https://github.com/michaelsam94/Micro-Budgeting/issues)
+
+Build status and coverage badges are not shown because this repository does not currently include CI or coverage
+configuration.
 
 ## Project Overview
 
-Micro Budgeting is an offline Android personal finance app for recording expenses, setting category budgets, and reviewing monthly spending patterns. It is designed for users who want a small, private budgeting tool without accounts, cloud sync, or internet access. The app stores financial data locally, encrypts the Room database with SQLCipher, and includes encrypted export/import backups.
+Micro Budgeting is an offline Android app for tracking everyday expenses, setting category budgets, and reviewing monthly
+spending. It is built for people who want a small personal finance tool without accounts, cloud sync, bank connections, or
+internet permission.
+
+The app stores data locally, uses SQLCipher-backed Room storage on real devices, and supports passphrase-protected export
+and import backups. Demo link: Not configured.
 
 <table>
   <tr>
     <td><img src="play-store/phone/01_dashboard.png" alt="Dashboard screenshot" width="220"></td>
     <td><img src="play-store/phone/02_expenses.png" alt="Expenses screenshot" width="220"></td>
-    <td><img src="play-store/phone/04_backup.png" alt="Backup screenshot" width="220"></td>
+    <td><img src="play-store/phone/03_sms_parse.png" alt="Bank alert parser screenshot" width="220"></td>
   </tr>
 </table>
 
-Demo link: Not configured.
-
 ## Key Features
 
-- 🔒 Fully offline operation with no declared internet permission.
-- 🧾 Manual expense tracking with amount, category, note, and date fields.
-- 📊 Monthly budget summaries and spending visualizations.
-- 🏷️ Default finance categories with icons and color badges.
-- 🧮 Category spending caps for micro-budgeting workflows.
-- 🗄️ SQLCipher-backed local Room database encryption.
-- 🔐 Passphrase-protected encrypted backup export and import.
-- 🖼️ Play Store screenshot and feature graphic generation through Roborazzi tests.
+- 🔒 Offline by design: the manifest declares no internet, SMS, contacts, location, camera, or microphone permissions.
+- 🧾 Manual expense logging: add amount, category, note, and date for each transaction.
+- 🏷️ Category budgets: set spending caps and track remaining budget by category and month.
+- 📊 Spending charts: review monthly distribution and budget progress with Compose visualizations.
+- 📨 Bank alert parsing: paste transaction alert text manually to extract an amount and suggested category for review.
+- 🔐 Encrypted local backups: export and import budget data with passphrase-based AES-GCM encryption.
+- 🎨 Store-ready branding: includes launcher icons, a feature graphic, phone screenshots, and tablet screenshots.
+- 🧪 Screenshot automation: Roborazzi tests regenerate Play Store assets from deterministic seeded scenes.
 
 ## Architecture Overview
 
 ```mermaid
 flowchart TD
-    User["User"] --> UI["Jetpack Compose UI"]
+    User["User"] --> Activity["MainActivity"]
+    Activity --> UI["Jetpack Compose screens"]
     UI --> VM["FinanceViewModel"]
-    VM --> Repos["Domain Repositories"]
-    Repos --> Room["Room DAOs"]
-    Room --> DB["SQLCipher Encrypted SQLite"]
+    VM --> CategoryRepo["CategoryRepository"]
+    VM --> TransactionRepo["TransactionRepository"]
+    VM --> BudgetRepo["BudgetRepository"]
+    CategoryRepo --> Room["Room DAOs"]
+    TransactionRepo --> Room
+    BudgetRepo --> Room
+    Room --> SQLCipher["SQLCipher SQLite database"]
+    VM --> Parser["SmsParser for pasted alerts"]
     VM --> Backup["EncryptedBackupSerializer"]
-    Backup --> Clipboard["Clipboard / Local Backup File"]
+    Backup --> Clipboard["Clipboard / local backup text"]
 ```
 
 ### Components And Layers
 
-- `MainActivity` owns the Compose entry point and creates `FinanceViewModel` through the AndroidX `viewModels` delegate.
-- `presentation/` contains the Compose screens, charts, bottom navigation, backup UI, and user interaction state.
-- `domain/` defines core models and repository interfaces for categories, budgets, and transactions.
-- `data/repository/` maps Room entities to domain models and implements repository interfaces.
-- `data/local/db/` defines Room entities, DAOs, and the SQLCipher-backed database.
-- `data/backup/` serializes budget data with Moshi and encrypts backups with AES-GCM.
+- `MainActivity` starts the Compose app, enables edge-to-edge drawing, and creates `FinanceViewModel`.
+- `presentation/` contains tabs, dialogs, charts, bottom navigation, toolbar branding, and UI state rendering.
+- `domain/` defines `Category`, `Transaction`, `Budget`, `BudgetSummary`, and repository interfaces.
+- `data/repository/` maps Room entities to domain models and seeds default categories.
+- `data/local/db/` contains Room entities, DAOs, and SQLCipher database setup.
+- `data/sms/SmsParser.kt` parses manually pasted bank alert text; it does not read the device inbox.
+- `data/backup/EncryptedBackupSerializer.kt` serializes backup payloads with Moshi and encrypts them with AES-GCM.
+- `play-store/` contains listing copy, feature graphic, app icon, and generated screenshots.
 
 ### Data Flow
 
-1. The user records an expense or configures a budget in the Compose UI.
-2. `FinanceViewModel` validates input and calls the relevant repository.
-3. Repository implementations map domain models to Room entities.
-4. Room persists data in `finance.db`, opened through SQLCipher on real devices.
-5. UI state is refreshed from Kotlin `Flow` streams and rendered by Compose.
+1. A user adds an expense, configures a budget, pastes a bank alert, or imports/exports a backup.
+2. Compose UI events call `FinanceViewModel` methods.
+3. The ViewModel validates input and delegates persistence work to repository interfaces.
+4. Repository implementations write Room entities to the encrypted local database.
+5. Room `Flow` streams feed updated categories, transactions, and budgets back to the UI.
+6. Backup export serializes local data, encrypts it with a passphrase, and places the encoded payload where the user can
+   copy or save it.
 
 ### Design Patterns
 
-- MVVM for screen state and business actions.
-- Repository interfaces for separating domain logic from Room persistence.
-- Dependency container in `AppContainerImpl` for app-level wiring.
-- Reactive `Flow` streams for month-filtered transaction and budget data.
+- MVVM for UI state, user actions, and lifecycle-aware data observation.
+- Repository interfaces to separate domain behavior from Room persistence.
+- A small dependency container in `AppContainerImpl` for application-level wiring.
+- Reactive Kotlin `Flow` streams for month-scoped transaction and budget summaries.
+- Test-only fixtures for deterministic Play Store screenshot generation.
 
 ## Tech Stack & Libraries
 
@@ -75,31 +96,36 @@ flowchart TD
 | Language | Kotlin | 2.2.10 | Android app implementation |
 | Build | Android Gradle Plugin | 9.1.1 | Android build system |
 | UI | Jetpack Compose Material 3 | Compose BOM 2024.09.00 | Declarative UI |
-| Activity | AndroidX Activity Compose | 1.10.1 | Compose activity integration |
-| ViewModel | AndroidX Lifecycle | 2.8.7 | UI state ownership |
-| Navigation | AndroidX Navigation Compose | 2.8.9 | Navigation dependency, currently simple tab UI |
-| Persistence | Room | 2.7.0 | SQLite abstraction and DAOs |
-| Encryption | SQLCipher Android | 4.16.0 | Encrypted SQLite database |
+| Activity | AndroidX Activity Compose | 1.10.1 | Compose activity entry point |
+| Lifecycle | AndroidX Lifecycle | 2.8.7 | ViewModel and lifecycle-aware state |
+| Navigation | AndroidX Navigation Compose | 2.8.9 | Available dependency; current UI uses tabs |
+| Persistence | Room | 2.7.0 | SQLite abstraction and DAO generation |
+| SQLite | AndroidX SQLite | 2.6.2 | SQLite integration |
+| Encryption | SQLCipher Android | 4.16.0 | Encrypted local database storage |
 | Key Storage | AndroidX Security Crypto | 1.1.0-alpha06 | MasterKey and encrypted preferences |
 | JSON | Moshi | 1.15.2 | Backup payload serialization |
-| Coroutines | Kotlinx Coroutines | 1.10.2 | Background work and flows |
-| Screenshots | Roborazzi | 1.59.0 | Play Store screenshot generation |
-| Tests | JUnit / Robolectric | 4.13.2 / 4.16.1 | JVM and Android runtime tests |
+| Networking libs | OkHttp / Retrofit | 4.10.0 / 2.12.0 | Present as dependencies, not used for app networking |
+| Coroutines | Kotlinx Coroutines | 1.10.2 | Background work and Flow collection |
+| Screenshots | Roborazzi | 1.59.0 | Play Store screenshot and feature graphic generation |
+| JVM Android tests | Robolectric | 4.16.1 | Local Android runtime tests |
+| Unit tests | JUnit | 4.13.2 | Test runner and assertions |
 
 ## Prerequisites
 
-- macOS, Linux, or Windows with Android Studio installed.
-- JDK 17. Android Studio's bundled JDK is recommended.
-- Android SDK with platform 36.1 and build tools installed.
-- An emulator or physical Android device for manual testing.
-- Git for cloning and contributing.
+- macOS, Linux, or Windows.
+- Android Studio or the Android SDK command-line tools.
+- JDK 17. Android Studio's bundled JBR is recommended.
+- Android SDK platform `36.1` for this project configuration.
+- Git for cloning the repository.
+- A connected Android device or emulator for install and instrumented tests.
 
 | Variable | Required | Default | Description |
 |---|---:|---|---|
-| `KEYSTORE_PATH` | Release only | `my-upload-key.jks` | Path to the release upload keystore. |
-| `STORE_PASSWORD` | Release only | Not configured | Release keystore password. |
-| `KEY_PASSWORD` | Release only | Not configured | Release key password. |
-| `GEMINI_API_KEY` | No | Not used | Present in `.env.example` from project scaffolding, but the app does not use Gemini APIs. |
+| `KEYSTORE_PATH` | Release only | `my-upload-key.jks` | Release upload keystore path. |
+| `STORE_PASSWORD` | Release only | From `key.properties` when present | Release keystore password. |
+| `KEY_ALIAS` | Release only | `upload` | Release key alias. |
+| `KEY_PASSWORD` | Release only | From `key.properties` when present | Release key password. |
+| `GEMINI_API_KEY` | No | Value in `.env.example` | Scaffolding leftover; the app does not read this value or call Gemini APIs. |
 
 ## Installation & Setup
 
@@ -110,49 +136,61 @@ git clone https://github.com/michaelsam94/Micro-Budgeting.git
 cd Micro-Budgeting
 ```
 
-2. Open the project in Android Studio and let Gradle sync.
-
-3. Confirm JDK 17 is selected for Gradle.
+2. Open the project in Android Studio and let Gradle sync, or use the wrapper from the terminal.
 
 ```bash
 ./gradlew --version
 ```
 
-4. Build the debug APK.
+3. Build a debug APK.
 
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-5. Install on a connected device or emulator.
+4. Install the APK on a connected device or emulator.
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-6. Run the app from Android Studio or launch it from the device.
+5. Launch the app.
 
-Database setup: Not required. The app creates its local Room database on first launch.
+```bash
+adb shell monkey -p com.michael.microbudgeting 1
+```
 
-Development server: Not applicable. This is a native Android app.
+Database setup: Not required. The app creates its local Room database on first launch. Development server: Not
+applicable because this is a native Android app.
 
 ## Configuration
 
-The main app configuration lives in `app/build.gradle.kts`:
+The primary app configuration lives in `app/build.gradle.kts`:
 
+- `namespace`: `com.michael.microbudgeting`
 - `applicationId`: `com.michael.microbudgeting`
 - `minSdk`: `24`
 - `targetSdk`: `36`
-- `versionCode`: `3`
-- `versionName`: `1.0.1`
+- `compileSdk`: `36.1`
+- `versionCode`: `5`
+- `versionName`: `1.0.3`
 
-Release signing is configured in `app/build.gradle.kts` and uses environment variables for keystore passwords. Gradle must be restarted or re-synced after changes to build files, dependencies, or signing settings.
+Release signing is configured in the `signingConfigs.release` block. Credentials can come from environment variables or
+from `key.properties`; keep keystores and passwords out of public repositories.
 
-The app does not declare internet, SMS, call log, contacts, location, camera, or microphone permissions.
+Theme and brand colors live in:
+
+- `app/src/main/java/com/michael/microbudgeting/ui/theme/Color.kt`
+- `app/src/main/java/com/michael/microbudgeting/ui/theme/Theme.kt`
+- `app/src/main/res/values/colors.xml`
+
+Launcher icons are stored under `app/src/main/res/mipmap-*`. Play Store copy and graphics are in `play-store/`.
+
+Gradle restart or sync is required after changing build files, dependency versions, signing settings, or SDK versions.
 
 ## Usage / Quick Start
 
-### Build And Launch A Debug APK
+### Build, Install, And Launch
 
 ```bash
 ./gradlew :app:assembleDebug
@@ -160,53 +198,75 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell monkey -p com.michael.microbudgeting 1
 ```
 
-### Run Startup And Unit Tests
+### Generate A Signed Release Bundle
+
+Set `STORE_PASSWORD` and `KEY_PASSWORD` in the shell or `key.properties` before running Gradle.
 
 ```bash
-./gradlew :app:testDebugUnitTest
+export KEYSTORE_PATH=/absolute/path/to/my-upload-key.jks
+export KEY_ALIAS='upload'
+./gradlew :app:bundleRelease
 ```
 
-The test suite includes `MainActivityLaunchTest`, which exercises app startup and helps catch launch-time crashes.
+The release bundle is written to:
 
-### Generate Play Store Assets
+```text
+app/build/outputs/bundle/release/app-release.aab
+```
+
+### Regenerate Play Store Assets
 
 ```bash
 ./gradlew generatePlayStoreAssets
 ```
 
-Generated Play Store files are written under `play-store/`.
+Generated assets are written to:
+
+```text
+play-store/app-icon-512.png
+play-store/feature-graphic.png
+play-store/phone/
+play-store/tablet/
+```
 
 ## API Reference
 
-Not applicable. Micro Budgeting is a local Android application and does not expose an HTTP API, SDK, command-line API, or public service endpoint.
+Not applicable. Micro Budgeting is a local Android application and does not expose an HTTP API, SDK, command-line API, or
+public service endpoint.
 
 ## Project Structure
 
 ```text
 .
 ├── app/
-│   ├── build.gradle.kts              # Android app module configuration
+│   ├── build.gradle.kts              # Android application module, signing, tests, dependencies
+│   ├── proguard-rules.pro            # Release shrinker rules, currently minify disabled
 │   └── src/
-│       ├── main/                     # App source, manifest, and resources
-│       ├── test/                     # JVM, Robolectric, and screenshot tests
+│       ├── main/
+│       │   ├── AndroidManifest.xml   # App label, launcher activity, no dangerous permissions
+│       │   ├── java/...              # Kotlin source for UI, domain, data, and DI layers
+│       │   └── res/                  # Launcher icons, XML backup rules, strings, colors, themes
+│       ├── test/                     # JVM, Robolectric, and Roborazzi screenshot tests
 │       └── androidTest/              # Instrumented Android tests
 ├── gradle/
 │   ├── libs.versions.toml            # Version catalog
 │   └── wrapper/                      # Gradle wrapper files
 ├── play-store/
-│   ├── listing-descriptions.md       # Store listing copy
 │   ├── app-icon-512.png              # Google Play app icon
 │   ├── feature-graphic.png           # Google Play feature graphic
-│   ├── phone/                        # Phone screenshots
-│   └── tablet/                       # Tablet screenshots
-├── build.gradle.kts                  # Root Gradle plugins
-├── settings.gradle.kts               # Gradle project settings
+│   ├── listing-descriptions.md       # Store listing copy
+│   ├── phone/                        # 1080x1920 phone screenshots
+│   └── tablet/                       # 1600x2560 tablet screenshots
+├── build.gradle.kts                  # Root Gradle plugin declarations
+├── gradle.properties                 # Gradle, Kotlin, caching, and worker settings
+├── metadata.json                     # Local project metadata
+├── settings.gradle.kts               # Repository name and module inclusion
 └── README.md                         # Project documentation
 ```
 
 ## Testing
 
-### Unit And Robolectric Tests
+### JVM And Robolectric Tests
 
 ```bash
 ./gradlew :app:testDebugUnitTest
@@ -217,7 +277,8 @@ Test locations:
 - `app/src/test/java/com/michael/microbudgeting/`
 - `app/src/test/java/com/michael/microbudgeting/playstore/`
 
-Naming convention: JVM and Robolectric tests use `*Test.kt`; Play Store screenshot tests are grouped under the `PlayStoreScreenshotTests` category.
+Naming convention: JVM and Robolectric tests use `*Test.kt`. Play Store screenshot tests are marked with the
+`PlayStoreScreenshotTests` JUnit category and are included when screenshot generation is requested.
 
 ### Instrumented Tests
 
@@ -233,50 +294,55 @@ Instrumented tests live in `app/src/androidTest/`.
 ./gradlew generatePlayStoreAssets
 ```
 
-Roborazzi writes assets into `play-store/`.
+This task runs Roborazzi and writes deterministic assets to `play-store/`.
 
 ### Coverage
 
-Not configured. No JaCoCo, Kover, or hosted coverage report is present in the repository.
+Not configured. No JaCoCo, Kover, or hosted coverage report is present in this repository.
 
 ## Deployment
 
-### Debug Builds
+### Debug APK
 
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-Debug APK output:
+Output:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Release Builds
-
-Release signing expects a keystore and credentials:
+### Release AAB For Google Play
 
 ```bash
-export KEYSTORE_PATH=/absolute/path/to/my-upload-key.jks
-export STORE_PASSWORD='your-store-password'
-export KEY_PASSWORD='your-key-password'
 ./gradlew :app:bundleRelease
 ```
 
-Release artifact output:
+Output:
 
 ```text
 app/build/outputs/bundle/release/app-release.aab
 ```
 
+Before uploading to Play Console, confirm:
+
+- `versionCode` is greater than the last uploaded bundle.
+- The Play Store app name is `Micro Budgeting`.
+- The installed app label is `Micro Budgeting`.
+- Launcher icon, `play-store/app-icon-512.png`, and `play-store/feature-graphic.png` use matching branding.
+- Listing copy in `play-store/listing-descriptions.md` matches the installed app behavior.
+
 ### Docker And Cloud
 
-Not applicable. This repository builds a native Android app and has no Dockerfile, server process, or cloud deployment target.
+Not applicable. This repository builds a native Android app and has no Dockerfile, server process, cloud deployment
+target, or backend health endpoint.
 
 ### Health Check
 
-Not applicable. There is no backend service. For app health, run unit tests, install the APK on a test device, and verify the app launches without crashing.
+Not applicable for a server endpoint. For app health, run tests, install the APK on a test device, and verify that the
+app launches and can add an expense, parse pasted alert text, and export/import a backup.
 
 ## Contributing
 
@@ -289,9 +355,9 @@ git checkout -b feature/short-description
 2. Use Conventional Commits where practical.
 
 ```text
-feat: add budget category editing
-fix: prevent startup crash on Android 15 devices
-docs: update Play Store release notes
+feat: add category editing
+fix: correct budget progress formatting
+docs: refresh Play Store release notes
 ```
 
 3. Run the relevant checks before opening a pull request.
@@ -300,35 +366,42 @@ docs: update Play Store release notes
 ./gradlew :app:testDebugUnitTest :app:assembleDebug
 ```
 
-4. Keep pull requests small and include screenshots for UI changes.
+4. For UI or store asset changes, regenerate screenshots.
+
+```bash
+./gradlew generatePlayStoreAssets
+```
 
 PR checklist:
 
 - Tests pass locally.
-- New user-facing behavior is reflected in README or Play Store copy.
-- No secrets, keystores, `.env`, or generated build outputs are committed.
-- UI changes are verified on at least one phone-sized screen.
+- User-facing behavior is reflected in README or Play Store copy.
+- No secrets, keystores, `.env`, or generated build outputs are committed unless intentionally managed elsewhere.
+- UI changes are checked on at least one phone-sized screen.
+- Release changes include an appropriate `versionCode` bump.
 
-Style and lint rules: Kotlin official code style is enabled in `gradle.properties`. A separate `./docs/CONTRIBUTING.md` file is not configured.
+Style and lint rules: Kotlin official code style is enabled in `gradle.properties`. A separate
+`./docs/CONTRIBUTING.md` file is not configured.
 
 ## Roadmap
 
 - [ ] Add editable custom categories from the app UI.
 - [ ] Add recurring expense templates for common monthly transactions.
-- [ ] Add export destination selection beyond clipboard and app files.
-- [ ] Add more targeted ViewModel and repository tests.
-- [ ] Add optional report filters by category and time period.
+- [ ] Add export destination selection beyond clipboard and app-managed text.
+- [ ] Add more focused ViewModel, repository, and backup serializer tests.
+- [ ] Add optional filters by category, source, and date range.
 
 ## License
 
 License: Not configured. No license file is currently present in this repository.
 
-Copyright © 2026 MichaelSam94.
+Copyright (c) 2026 MichaelSam94.
 
 ## Acknowledgements & Credits
 
-- Android, Kotlin, and Jetpack Compose for the app platform and UI toolkit.
+- Android, Kotlin, and Jetpack Compose for the application platform and UI toolkit.
 - Room and AndroidX SQLite for local persistence.
-- SQLCipher for encrypted local database storage.
-- Moshi for JSON backup serialization.
-- Roborazzi and Robolectric for screenshot and startup testing.
+- SQLCipher for encrypted SQLite storage.
+- AndroidX Security Crypto for local key management.
+- Moshi for backup JSON serialization.
+- Roborazzi and Robolectric for screenshot generation and local Android tests.

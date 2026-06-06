@@ -22,6 +22,9 @@ interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun getCategoryCount(): Int
+
+    @Query("UPDATE categories SET colorHex = :colorHex WHERE name = :name")
+    suspend fun updateCategoryColorByName(name: String, colorHex: String)
 }
 
 @Dao

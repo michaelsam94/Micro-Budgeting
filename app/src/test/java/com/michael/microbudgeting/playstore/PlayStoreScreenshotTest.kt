@@ -3,14 +3,12 @@ package com.michael.microbudgeting.playstore
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,27 +45,7 @@ class PlayStoreScreenshotTest {
                 TopAppBar(
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.primary,
-                                                MaterialTheme.colorScheme.tertiary
-                                            )
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ShoppingCart,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            PlayStoreBrandMark(modifier = Modifier.size(36.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Micro Budgeting",
@@ -148,7 +126,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     fun phone_01_dashboard() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value
+        val uiState = PlayStoreTestFixtures.seededUiState()
         capturePlayStoreImage("phone/01_dashboard.png") {
             MyApplicationTheme {
                 PlayStoreScreenShell(0, uiState, viewModel)
@@ -160,7 +138,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     fun phone_02_expenses() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value
+        val uiState = PlayStoreTestFixtures.seededUiState()
         capturePlayStoreImage("phone/02_expenses.png") {
             MyApplicationTheme {
                 PlayStoreScreenShell(1, uiState, viewModel)
@@ -172,7 +150,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     fun phone_03_sms_parse() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value.copy(
+        val uiState = PlayStoreTestFixtures.seededUiState().copy(
             pendingSmsExpenses = listOf(
                 SmsParser.ParsedExpense(250.0, "Fawry", "Paid Fawry bill EGP 250.00", "Utilities"),
                 SmsParser.ParsedExpense(1200.0, "Carrefour", "Purchased items at Carrefour EGP 1,200.00", "Groceries")
@@ -189,7 +167,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w360dp-h640dp-xxhdpi")
     fun phone_04_backup() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value
+        val uiState = PlayStoreTestFixtures.seededUiState()
         capturePlayStoreImage("phone/04_backup.png") {
             MyApplicationTheme {
                 PlayStoreScreenShell(3, uiState, viewModel)
@@ -201,7 +179,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w800dp-h1280dp-xhdpi")
     fun tablet_01_dashboard() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value
+        val uiState = PlayStoreTestFixtures.seededUiState()
         capturePlayStoreImage("tablet/01_dashboard.png") {
             MyApplicationTheme {
                 PlayStoreScreenShell(0, uiState, viewModel)
@@ -213,7 +191,7 @@ class PlayStoreScreenshotTest {
     @Config(qualifiers = "w800dp-h1280dp-xhdpi")
     fun tablet_02_expenses() {
         val viewModel = PlayStoreTestFixtures.createSeededViewModel(app)
-        val uiState = viewModel.uiState.value
+        val uiState = PlayStoreTestFixtures.seededUiState()
         capturePlayStoreImage("tablet/02_expenses.png") {
             MyApplicationTheme {
                 PlayStoreScreenShell(1, uiState, viewModel)

@@ -70,18 +70,31 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun insertDefaultCategoriesIfNeeded() {
+        val defaultColors = mapOf(
+            "Groceries" to "#0F766E",
+            "Food & Dining" to "#F2B84B",
+            "Transport" to "#155E63",
+            "Health" to "#2DD4BF",
+            "Utilities" to "#B7791F",
+            "Shopping" to "#12363A",
+            "Uncategorized" to "#64748B"
+        )
         if (categoryDao.getCategoryCount() == 0) {
             val defaults = listOf(
-                CategoryEntity(name = "Groceries", iconName = "shopping_cart", colorHex = "#4CAF50"),
-                CategoryEntity(name = "Food & Dining", iconName = "restaurant", colorHex = "#FF9800"),
-                CategoryEntity(name = "Transport", iconName = "directions_car", colorHex = "#2196F3"),
-                CategoryEntity(name = "Health", iconName = "local_hospital", colorHex = "#E91E63"),
-                CategoryEntity(name = "Utilities", iconName = "bolt", colorHex = "#9C27B0"),
-                CategoryEntity(name = "Shopping", iconName = "local_mall", colorHex = "#00BCD4"),
-                CategoryEntity(name = "Uncategorized", iconName = "category", colorHex = "#9E9E9E")
+                CategoryEntity(name = "Groceries", iconName = "shopping_cart", colorHex = defaultColors.getValue("Groceries")),
+                CategoryEntity(name = "Food & Dining", iconName = "restaurant", colorHex = defaultColors.getValue("Food & Dining")),
+                CategoryEntity(name = "Transport", iconName = "directions_car", colorHex = defaultColors.getValue("Transport")),
+                CategoryEntity(name = "Health", iconName = "local_hospital", colorHex = defaultColors.getValue("Health")),
+                CategoryEntity(name = "Utilities", iconName = "bolt", colorHex = defaultColors.getValue("Utilities")),
+                CategoryEntity(name = "Shopping", iconName = "local_mall", colorHex = defaultColors.getValue("Shopping")),
+                CategoryEntity(name = "Uncategorized", iconName = "category", colorHex = defaultColors.getValue("Uncategorized"))
             )
             for (category in defaults) {
                 categoryDao.insertCategory(category)
+            }
+        } else {
+            defaultColors.forEach { (name, colorHex) ->
+                categoryDao.updateCategoryColorByName(name, colorHex)
             }
         }
     }

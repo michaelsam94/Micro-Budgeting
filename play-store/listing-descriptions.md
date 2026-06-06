@@ -4,25 +4,24 @@
 Micro Budgeting
 
 ## Short description (80 chars max)
-100% offline, privacy-first personal finance and micro-budgeting.
+Offline expense tracking, budgets, pasted bank alerts, and backups.
 
 ## Full description (4000 chars max)
-Take absolute control of your personal finances with Micro Budgeting, a premium, 100% offline, and privacy-first budgeting app designed to help you save more and spend smarter. 
+Micro Budgeting is a local Android app for tracking everyday expenses and category budgets without accounts, cloud sync, or internet access.
 
-Micro Budgeting helps you record expenses, organize categories, set spending limits, and review your monthly progress with absolutely zero internet permissions required. Your financial data never leaves your device.
+Use it to record manual expenses, organize spending by category, set budget limits, paste bank transaction alerts for review, and check monthly progress with simple charts. Financial data is stored on your device, and backup files can be exported and imported with passphrase encryption.
 
 Key Features:
-- 100% Offline & Private: No account registration, no cloud storage, and no internet access. Your data is yours alone.
-- Manual Expense Tracking: Add expenses quickly with amount, category, note, and date.
-- Micro-Budgeting & Categories: Set weekly or monthly spending caps across customizable categories.
-- Real-time Analytics: Visualize your spending patterns with beautiful, interactive charts.
-- Secure Encrypted Backups: Export and import your data with secure passphrase encryption.
+- Offline by design: The app does not require an account, cloud storage, or internet permission.
+- Manual expense tracking: Add expenses with amount, category, note, and date.
+- Bank alert parsing: Paste transaction alerts manually to extract an amount and suggested category before saving.
+- Category budgets: Set spending caps for categories and review monthly progress.
+- Spending charts: See monthly summaries and category breakdowns in the app.
+- Encrypted backups: Export and import local backup files protected by a passphrase.
 
-Start your path to financial freedom today with Micro Budgeting.
+Micro Budgeting is intended for personal, manual budgeting. It does not connect to banks, read your inbox, process payments, provide financial advice, or sync data online.
 
 ## What's new (500 chars max)
-First official release of Micro Budgeting!
-- 100% offline, private personal finance tracking.
-- Manual expense logging and category budgets.
-- Interactive charts and customizable budgets.
-- Encrypted data export and import backups.
+Updated Micro Budgeting branding and store listing to match the installed app.
+- New finance-focused launcher and Play Store icon.
+- Clearer listing copy for offline expense tracking, category budgets, pasted bank alerts, spending charts, and encrypted local backups.

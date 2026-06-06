@@ -67,7 +67,7 @@ fun BudgetProgressBar(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = if (budgetSet) {
-                        String.format(Locale.getDefault(), "%,.0f / %.,0f EGP", summary.spent, limit)
+                        String.format(Locale.getDefault(), "%,.0f / %,.0f EGP", summary.spent, limit)
                     } else {
                         String.format(Locale.getDefault(), "%,.0f EGP", summary.spent)
                     },
@@ -92,7 +92,7 @@ fun BudgetProgressBar(
 
             if (summary.remaining < 0) {
                 Text(
-                    text = String.format(Locale.getDefault(), "Over budget by %.,0f EGP!", -summary.remaining),
+                    text = String.format(Locale.getDefault(), "Over budget by %,.0f EGP!", -summary.remaining),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
@@ -100,7 +100,7 @@ fun BudgetProgressBar(
                 )
             } else if (summary.remaining > 0) {
                 Text(
-                    text = String.format(Locale.getDefault(), "%.,0f EGP remaining available", summary.remaining),
+                    text = String.format(Locale.getDefault(), "%,.0f EGP remaining available", summary.remaining),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 2.dp)
